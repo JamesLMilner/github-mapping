@@ -6,94 +6,87 @@ import csv
 import base64
 import time
 import StringIO
-from urllib2 import urlopen, Request
+from urllib2 import urlopen, Request, HTTPError
+from urllib import quote
 
-citiesDict = {
-        "England" : {
-                          "London" : 9787426,
-                          "Manchester": 2553379,
-                          "Liverpool" : 466415,
-                          "Nottingham": 729977,
-                          "Sheffield": 640720,
-                          "Birmingham": 2440986,
-                          "Leeds": 1777934,
-                          "Leicester": 509000,
-                          "Bristol": 617000,
-                          "Bath": 88859,
-                          "Brighton": 163000,
-                          "Newcastle": 879996,
-                          "Cambridge": 128515,
-                          "Oxford": 171380,
-                          "Bournemouth": 183491,
-                          "Southampton" : 855569,
-                          "Durham" : 48069,
-                          "York" : 204439,
-                          "Aylesbury" : 184560,
-                          "Reading" : 160825,
-                          "Warwick" : 139396,
-                          "Gloucester" : 125649,
-                          "Exeter" : 121800,
-                          "Plymouth" : 256600,
-                          "Norwich" : 140452
-                        },
 
-        "Wales" : {
-                        "Bangor" : 16358,
-                        "Cardiff" : 447287,
-                        "Newport" : 145700,
-                        "Swansea" : 239023
-                      },
-
-        "Scotland" : {
-                        "Aberdeen" : 189120,
-                        "Dundee" : 153990,
-                        "Glasgow" : 589900,
-                        "Inverness" : 57960,
-                        "Edinburgh" : 782000
-                        },
-        "Northern-Ireland" : {
-                        "Belfast" : 276705,
-                        "Derry" : 83652,
-                        "Lisburn" : 71403
-        }
-}
-
-parent = "United Kingdom"
-suffixes = ["Placeholder", "UK", "GB", "United-Kingdom", "Great-Britain"]
 #https://github.com/settings/tokens
-token =  ""
-github_url = "https://api.github.com/search/users?q=+location:"
-fields = ["City", "Country", "UK", "GB", "United Kingdom", "Great Britain", "GH Total", "City Population", "Rate"]
+TOKEN = "a4547df4964aff23832df731126d4ddd7fc77ca9"
 
+def write_github_csv(cities_csv, output_csv):
+    with open(cities_csv + '.csv', 'rb') as citiesCsv:
+        citiesCsv = csv.reader(citiesCsv)
+        with open(output_csv + '.csv', 'wb') as outputCsv:
+            outputCsv = csv.writer(outputCsv)
+            # Write headers
 
-with open('github.csv', 'wb') as file:
-    ghCsv = csv.writer(file, delimiter=',')
-    ghCsv.writerow(fields)
+            headers = True
+            for row in citiesCsv:
 
-    for country, cities in citiesDict.iteritems():
+                if headers and row:
 
-        suffixes[0] = country
+                    row.append("Total")
+                    row.append("Rate")
+                    outputCsv.writerow(row)
+                    headers = False
+                    continue
 
-        for city, population in cities.iteritems():
-            cleanCity = city.replace("-", " ")
-            cityAddress = cleanCity + ", " + country
-            rowData = [cityAddress, "Country", "UK", "GB", "United Kingdom", "Great Britain", "GH Total", population, ""]
-            c = 1
-            total = 0
-            for suffix in suffixes:
-                url = github_url + city + "," + suffix
-                print "GETting: " + url
+                # city, country, latitude, longitude, population
+                city = row[0]
+                country = row[1]
+                population = int(row[4].replace(",", "")) * 1000
 
-                request = Request(url)
-                request.add_header('Authorization', 'token %s' % token)
-                response = urlopen(request)
-                data = json.load(response)
-                rowData[c] = data["total_count"]
-                total += data["total_count"]
-                c += 1
+                try:
+                    total = get_city_github_users(city, country, TOKEN)
+                except HTTPError as err:
+                    print "There was an HTTP error: " + str(err.code)
+                    print err.read()
+                    return
+
+                row.append(total)
+                rate = round(float(total) / float(population) * 100.0, 2)
+                print total, population, rate
+                print
+
+                row.append(rate) # Rate
+                outputCsv.writerow(row)
+
                 time.sleep(3)
-            rowData[6] = total
-            rowData[7] = population
-            rowData[8] = total / population * 100
-            ghCsv.writerow(rowData)
 
+def request(url, token):
+    request = Request(url)
+    request.add_header('Authorization', 'token %s' % token)
+    response = urlopen(request)
+    return json.load(response)
+
+def variations(variation, country, token):
+    github_url = "https://api.github.com/search/users?q=+location:"
+    cityAddress = quote('"' + variation + ", " + country + '"')
+    url = github_url + cityAddress
+    print "Getting...", variation + ", " + country
+    print "URL: " + url
+
+    total = int(request(url, token)["total_count"])
+    time.sleep(1)
+    url = github_url + quote('"' + variation + '"')
+    print "URL: " + url
+    print ""
+    total += int(request(url, token)["total_count"])
+    return total
+
+def get_city_github_users(city, country, token):
+
+    total = 0
+    if "(" in city:
+        cityVariations = city.split("(")
+        for c in cityVariations:
+            c = c.replace(")", "").strip()
+            total += variations(c, country, token)
+
+    else:
+        total += variations(city, country, token)
+
+    return total
+
+if __name__ == "__main__":
+    write_github_csv("cities", "github-cities")
