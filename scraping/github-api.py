@@ -34,7 +34,7 @@ def write_github_csv(cities_csv, output_csv):
                 # city, country, latitude, longitude, population
                 city = row[0]
                 country = row[1]
-                population = int(row[4].replace(",", "")) * 1000
+                population = int(row[4].replace(",", "").replace('"')) * 1000
 
                 try:
                     total = get_city_github_users(city, country, TOKEN)
