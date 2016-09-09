@@ -67,7 +67,7 @@
             if (i === 0) div.innerHTML += legendTitle;
 
             else div.innerHTML += '<i class="iconstext">'+grades[i]+'</i>' +
-                                  '<img style="padding-left:'+ i * 5 +'px; padding-right:'+ i * 5 +'px" class="icons" src="imgs/github4.png"' +
+                                  '<img style="padding-left:'+ i * 5 +'px; padding-right:'+ i * 5 +'px" class="icons" src="imgs/github.png"' +
                                   'width='+icons[i][0]+' height='+icons[i][1]+'><br><br>';
         }
 
