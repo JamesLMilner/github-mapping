@@ -1,4 +1,4 @@
-# GitHub Mapping
+# :octocat: GitHub Mapping :globe_with_meridians:
 A map showing the estimated percentage of people in each city with a GitHub account.
 
 # Cities and Population Data
