@@ -121,7 +121,7 @@
 
               return L.marker(latlng, {
                   icon: L.icon({
-                      iconUrl: "imgs/github4.png",
+                      iconUrl: "imgs/github.png",
                       iconSize: size,
                       iconAnchor: [size[0] / 2, size[1] / 2],
                       popupAnchor: [0, -11]
