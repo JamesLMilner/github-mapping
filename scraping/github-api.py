@@ -11,7 +11,7 @@ from urllib import quote
 
 
 #https://github.com/settings/tokens
-TOKEN = "a4547df4964aff23832df731126d4ddd7fc77ca9"
+TOKEN = ""
 
 def write_github_csv(cities_csv, output_csv):
     with open(cities_csv + '.csv', 'rb') as citiesCsv:
@@ -34,7 +34,7 @@ def write_github_csv(cities_csv, output_csv):
                 # city, country, latitude, longitude, population
                 city = row[0]
                 country = row[1]
-                population = int(row[4].replace(",", "").replace('"')) * 1000
+                population = int(row[4].replace(",", "").replace('"')) * 1000 # Remove any fluff
 
                 try:
                     total = get_city_github_users(city, country, TOKEN)
@@ -77,6 +77,7 @@ def variations(variation, country, token):
 def get_city_github_users(city, country, token):
 
     total = 0
+    # Hacky as the cities sometimes have alternative names in brackets
     if "(" in city:
         cityVariations = city.split("(")
         for c in cityVariations:
