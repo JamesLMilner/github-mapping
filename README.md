@@ -18,7 +18,7 @@ The application uses:
   * [Leaflet.ajax](https://github.com/calvinmetcalf/leaflet-ajax)
 
 # Contribution
-Please feel free to contribute your city! Just it to the github-cities.geojson file, with a sourced city population and the total number of GitHub users (it's probably easiest to check this manually for one off cities).
+Please feel free to contribute your city! Just it to the github-cities.geojson file, with a sourced city population and the total number of GitHub users. It's probably easiest to check this manually for one off cities using the [Advanced Search functionality](https://github.com/search/advanced?q=sa&type=Repositories&utf8=%E2%9C%93). 
 
 
 # Acknowledgements
